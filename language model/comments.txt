@@ -1,0 +1,28 @@
+python3 embedder.py --input sequences/SEQUENCE.fasta --model NAME_MODEL --output embeddings/residue_embeddings.h5 --per_protein 1
+
+SEQUENCE.fasta 		      - файл с последовательностями в формате .fasta (пример f8.fasta)
+NAME_MODEL 		          - предобученная модель из статьи (пример prot_bert)
+residue_embeddings.h5 	- файл, в котором сохраняться эмбеддинги (формат h5py упрощает хранение большого объёма данных)
+per_protein 1           - задание параметра не нулевым (чтобы избежать проблем с делением)
+
+
+
+ошибки в prot5_embedder.py:
+
+device_str = 'cuda:0' if torch.cuda.is_available() else 'cpu'
+device = torch.device(device_str)
+print("Using device: {}".format(device))
+
+def get_T5_model(model_dir, transformer_link = "Rostlab/prot_t5_xl_half_uniref50-enc"):
+    print("Loading: {}".format(transformer_link))
+    if model_dir is not None:
+        print("##########################")
+        print("Loading cached model from: {}".format(model_dir))
+        print("##########################")
+    model = T5EncoderModel.from_pretrained(transformer_link, cache_dir=model_dir)
+    if device_str == 'cpu':
+        # model.full()
+        # print("FULL")
+    else:
+        model.half()
+        # print("HALF")
