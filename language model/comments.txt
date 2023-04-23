@@ -1,9 +1,9 @@
 python3 embedder.py --input sequences/SEQUENCE.fasta --model NAME_MODEL --output embeddings/residue_embeddings.h5 --per_protein 1
 
 SEQUENCE.fasta 		      - файл с последовательностями в формате .fasta (пример f8.fasta)
-NAME_MODEL 		          - предобученная модель из статьи (пример prot_bert)
-residue_embeddings.h5 	- файл, в котором сохраняться эмбеддинги (формат h5py упрощает хранение большого объёма данных)
-per_protein 1           - задание параметра не нулевым (чтобы избежать проблем с делением)
+NAME_MODEL 		          - предобученная модель из статьи : https://github.com/agemagician/ProtTrans#models (пример prot_bert)
+residue_embeddings.h5 	  - файл, в котором сохраняться эмбеддинги (формат h5py упрощает хранение большого объёма данных)
+per_protein 1             - задание параметра не нулевым (чтобы избежать проблем с делением)
 
 
 
