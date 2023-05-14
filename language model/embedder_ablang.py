@@ -15,16 +15,16 @@ def data_from_csv():
     else:
         file_name = 'v_seq_alignment_aa.csv'
 
-    global data, heavy_ablang
     data = pd.read_csv(file_name)
-    heavy_ablang = ablang.pretrained('heavy')
+    return data
 
 
-def embeddings_for_heavy():
+def embeddings_for_heavy(data):
     """
     Столбцы, которые должны быть в csv-файле:
     ['v_sequence_alignment_aa_heavy', 'v_call_heavy', 'v_call_light']
     """
+    heavy_ablang = ablang.pretrained('heavy')
     try:
         all_seq = data['v_sequence_alignment_aa_heavy'].tolist()
         count = input(f'Сколько последовательностей необходимо закодировать '
@@ -33,13 +33,13 @@ def embeddings_for_heavy():
         seqs = all_seq[:count]
 
         embedding = [[] for _ in range(data.shape[0])]
-        for i, _ in enumerate(tqdm(seqs)):
+        for i, _ in enumerate(tqdm(seqs)):  # TODO: передавать по 50 строк
             embedding[i] = heavy_ablang(seqs[i], mode='seqcoding')
 
         data['embedding_heavy'] = embedding
 
-        try:
-            data.to_csv('embeddings.cvs',
+        try:  # TODO: сохранять в экономном формате (h5py или json.dump)
+            data.to_csv('embeddings.csv',
                         columns=['embedding_heavy', 'v_call_heavy', 'v_call_light'], index=False)
 
         except Exception as except_j:
@@ -50,7 +50,7 @@ def embeddings_for_heavy():
         print(except_i)
 
 
-def cos_similarity():
+def cos_similarity(data):
     """
     Функция для проверки косинусного подобия.
     """
@@ -68,6 +68,7 @@ def cos_similarity():
         count[type_i] += 1
 
     embeddings = [[] for _ in range(count_types)]
+    heavy_ablang = ablang.pretrained('heavy')
     for i, sample in enumerate(samples):
         embeddings[i] = heavy_ablang(sample, mode='seqcoding')
 
@@ -89,10 +90,10 @@ def cos_similarity():
 if __name__ == '__main__':
     print('\n' + '-' * 100)
     print('Загрузка данных.')
-    data_from_csv()
+    data_set = data_from_csv()
     print('\n' + '-' * 100)
     print('Построение эмбеддингов.')
-    embeddings_for_heavy()
+    embeddings_for_heavy(data_set)
     print('\n' + '-' * 100)
-    print('Эмбеддинги для тяжёлых цепей и типы тяжёлых/лёгких цепей сохранены в файле "embeddings.cvs".')
+    print('Эмбеддинги для тяжёлых цепей и типы тяжёлых/лёгких цепей сохранены в файле "embeddings.csv".')
     print('Названия столбцов файла: ["embedding_heavy", "v_call_heavy", "v_call_light"]')
