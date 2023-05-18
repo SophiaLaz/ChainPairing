@@ -1,9 +1,11 @@
+import traceback
 import ablang
 import pandas as pd
 import torch
 import torch.nn.functional as F
-import time
+from sklearn.utils import gen_batches
 from tqdm import tqdm
+import json
 
 
 def data_from_csv():
@@ -16,6 +18,22 @@ def data_from_csv():
         file_name = 'v_seq_alignment_aa.csv'
 
     data = pd.read_csv(file_name)
+    print('\n' + '-' * 100)
+    print('Фильтр датасета от повторений.\n')
+    return del_duplicate(data)
+
+
+def del_duplicate(data):
+    print(f'Количество строк в изначальном датасете: \t{data.shape[0]}.')
+    alphabet, index_for_del = set(), []
+    for i, seq in enumerate(data['v_sequence_alignment_aa_heavy']):
+        if seq in alphabet:
+            index_for_del.append(i)
+        else:
+            alphabet.add(seq)
+    data.drop(index=index_for_del, inplace=True)
+    print(f'Удалено строк: \t\t\t\t\t\t\t\t{len(index_for_del)}.')
+    print(f'\nКоличество строк после удаления дубликатов: {data.shape[0]}.')
     return data
 
 
@@ -33,21 +51,27 @@ def embeddings_for_heavy(data):
         seqs = all_seq[:count]
 
         embedding = [[] for _ in range(data.shape[0])]
-        for i, _ in enumerate(tqdm(seqs)):  # TODO: передавать по 50 строк
-            embedding[i] = heavy_ablang(seqs[i], mode='seqcoding')
+        batch_size = 50
+        for i, batch in enumerate(tqdm(list(gen_batches(count, batch_size)))):
+            embedding[batch] = heavy_ablang(seqs[batch], mode='seqcoding').tolist()
 
         data['embedding_heavy'] = embedding
+        seq_heavy = data['v_sequence_alignment_aa_heavy'].tolist()
+        seq_light = data['v_sequence_alignment_aa_light'].tolist()
+        seq_embedding = {seq_heavy[i]: embedding[i] for i in range(data.shape[0])}
+        seq_heavy_light = {seq_heavy[i]: seq_light[i] for i in range(data.shape[0])}
 
-        try:  # TODO: сохранять в экономном формате (h5py или json.dump)
-            data.to_csv('embeddings.csv',
-                        columns=['embedding_heavy', 'v_call_heavy', 'v_call_light'], index=False)
+        with open('embeddings.json', 'w') as file:
+            json.dump(seq_embedding, file)
+        with open('paired.json', 'w') as file:
+            json.dump(seq_heavy_light, file)
+        print('Эмбеддинги успешно сохранены в файле "embeddings.json".')
+        print('Комплиментарные последовательности "v_sequence_alignment_aa_heavy" '
+              '\n\tи "v_sequence_alignment_aa_light" сохранены в файле "paired.json".')
 
-        except Exception as except_j:
-            print('В файле должны быть столбцы ["v_call_heavy", "v_call_light"].')
-            print(except_j)
     except Exception as except_i:
         print('А/к последовательности должны быть в столбце "v_sequence_alignment_aa_heavy".')
-        print(except_i)
+        traceback.print_exception(except_i)
 
 
 def cos_similarity(data):
