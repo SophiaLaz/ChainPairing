@@ -50,24 +50,16 @@ def embeddings_for_heavy(data):
         count = data.shape[0] if count == 'all' else int(count)
         seqs = all_seq[:count]
 
-        embedding = [[] for _ in range(data.shape[0])]
+        embedding = [[] for _ in range(count)]
         batch_size = 50
         for i, batch in enumerate(tqdm(list(gen_batches(count, batch_size)))):
             embedding[batch] = heavy_ablang(seqs[batch], mode='seqcoding').tolist()
 
-        data['embedding_heavy'] = embedding
-        seq_heavy = data['v_sequence_alignment_aa_heavy'].tolist()
         seq_light = data['v_sequence_alignment_aa_light'].tolist()
-        seq_embedding = {seq_heavy[i]: embedding[i] for i in range(data.shape[0])}
-        seq_heavy_light = {seq_heavy[i]: seq_light[i] for i in range(data.shape[0])}
+        seq_embedding = {seq_light[i]: embedding[i] for i in range(count)}
 
         with open('embeddings.json', 'w') as file:
             json.dump(seq_embedding, file)
-        with open('paired.json', 'w') as file:
-            json.dump(seq_heavy_light, file)
-        print('Эмбеддинги успешно сохранены в файле "embeddings.json".')
-        print('Комплиментарные последовательности "v_sequence_alignment_aa_heavy" '
-              '\n\tи "v_sequence_alignment_aa_light" сохранены в файле "paired.json".')
 
     except Exception as except_i:
         print('А/к последовательности должны быть в столбце "v_sequence_alignment_aa_heavy".')
@@ -119,5 +111,4 @@ if __name__ == '__main__':
     print('Построение эмбеддингов.')
     embeddings_for_heavy(data_set)
     print('\n' + '-' * 100)
-    print('Эмбеддинги для тяжёлых цепей и типы тяжёлых/лёгких цепей сохранены в файле "embeddings.csv".')
-    print('Названия столбцов файла: ["embedding_heavy", "v_call_heavy", "v_call_light"]')
+    print('Эмбеддинги успешно сохранены в файле "embeddings.json" (пара light: embbedding_for_heavy).')
