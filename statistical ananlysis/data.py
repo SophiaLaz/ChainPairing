@@ -18,8 +18,8 @@ for file_i in filenames:
         df_i = df_i[mask1 & mask2 & mask3 & mask4]
         df_i['v_call_heavy'] = df_i['v_call_heavy'].str.split('-').str[0]
         df_i['v_call_light'] = df_i['v_call_light'].str.split('-').str[0]
-        df_i['j_call_heavy'] = df_i['v_call_heavy'].str.split('*').str[0]
-        df_i['j_call_light'] = df_i['v_call_light'].str.split('*').str[0]
+        df_i['j_call_heavy'] = df_i['j_call_heavy'].str.split('*').str[0]
+        df_i['j_call_light'] = df_i['j_call_light'].str.split('*').str[0]
         df = pd.concat([df, df_i], ignore_index=True)
 
     except Exception as except_i:
