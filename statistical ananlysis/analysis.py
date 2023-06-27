@@ -2,7 +2,8 @@ import pandas as pd
 import scipy.stats as st
 
 
-file_names, titles = ['v_call.csv', 'j_call.csv'], ['v-гена', 'j-гена']
+file_names = ['v_call.csv', 'j_call.csv', 'vh_and_jl.csv', 'jh_and_vl.csv']
+titles = ['v-гена', 'j-гена', 'VH и JL', 'JH и VL']
 
 for file_name, title in zip(file_names, titles):
     table_df = pd.read_csv('conjugacy_table/' + file_name)
